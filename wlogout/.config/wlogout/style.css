@@ -1,0 +1,98 @@
+/* wlogout - Gruvbox Dark Theme
+   Drop at: ~/.config/wlogout/style.css
+   Launch:  wlogout -b 5 -c 400 -r 400 -m 20
+*/
+
+/* ── Gruvbox palette ─────────────────────────────────── */
+* {
+  font-family: "JetBrainsMono Nerd Font Propo", monospace;
+  font-size: 13px;
+}
+
+/* ── Overlay background ──────────────────────────────── */
+window {
+  background: rgba(29, 32, 33, 0.88); /* #1d2021 @ 88% — matches kitty bg_opacity */
+}
+
+/* ── Button cards (100×110px as per your config) ─────── */
+button {
+  background: #282828;              /* --bg1 */
+  color: #ebdbb2;                   /* --fg  */
+  border: 1px solid #3c3836;        /* --bg2 */
+  border-radius: 8px;
+  margin: 6px;
+  padding: 16px 8px 10px;
+  min-width:  100px;
+  min-height: 110px;
+  background-repeat: no-repeat;
+  background-position: center 22px;
+  background-size: 36px;
+  transition: background 150ms ease,
+              border-color 150ms ease,
+              color 150ms ease,
+              box-shadow 150ms ease;
+}
+
+/* label sits below the icon */
+button:focus,
+button:active,
+button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ── Hover — blue accent ─────────────────────────────── */
+button:hover {
+  background-color: #3c3836;        /* --bg2 */
+  border-color: #458588;            /* --blue */
+  color: #458588;
+  box-shadow: 0 0 0 2px #45858844;
+}
+
+/* ── Active / pressed ────────────────────────────────── */
+button:active {
+  background-color: #504945;        /* --bg3 */
+  border-color: #689d6a;            /* --aqua */
+  color: #689d6a;
+}
+
+/* ══ Per-action accent colors on hover ══════════════════
+   Each gets its own border + text color so the action
+   intent is visually obvious at a glance.               */
+
+#lock:hover {
+  border-color: #458588;   /* blue  */
+  color:        #458588;
+  box-shadow:   0 0 0 2px #45858844;
+}
+
+#suspend:hover {
+  border-color: #98971a;   /* green */
+  color:        #98971a;
+  box-shadow:   0 0 0 2px #98971a44;
+}
+
+#hibernate:hover {
+  border-color: #d79921;   /* yellow */
+  color:        #d79921;
+  box-shadow:   0 0 0 2px #d7992144;
+}
+
+#logout:hover {
+  border-color: #d65d0e;   /* orange */
+  color:        #d65d0e;
+  box-shadow:   0 0 0 2px #d65d0e44;
+}
+
+#reboot:hover {
+  border-color: #b16286;   /* purple */
+  color:        #b16286;
+  box-shadow:   0 0 0 2px #b1628644;
+}
+
+#shutdown:hover {
+  border-color: #cc241d;   /* red    */
+  color:        #cc241d;
+  box-shadow:   0 0 0 2px #cc241d44;
+}
+

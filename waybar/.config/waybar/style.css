@@ -1,0 +1,82 @@
+@import "colors.css";
+
+* {
+    all: unset;
+    font-family: "Rubik", "JetBrainsMono Nerd Font Propo";
+    font-size: 13px;
+    font-weight: 500;
+}
+
+window#waybar {
+    background-color: @bg0;
+    color: @fg;
+    border-bottom: 2px solid @bg2;
+}
+
+/* ── shared pill base ── */
+.modules-left > widget > *,
+.modules-center > widget > *,
+.modules-right > widget > * {
+    padding: 4px 14px;
+    margin: 4px 3px;
+    border-radius: 6px;
+    background-color: @bg1;
+    color: @fg;
+    transition: background-color 150ms ease;
+}
+
+/* ── workspaces ── */
+#workspaces {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+#workspaces button {
+    padding: 4px 10px;
+    margin: 4px 2px;
+    border-radius: 6px;
+    background-color: @bg1;
+    color: @grey0;
+    font-weight: 500;
+}
+
+#workspaces button.active {
+    background-color: @blue;
+    color: @bg0;
+    font-weight: 700;
+}
+
+#workspaces button:hover {
+    background-color: @bg3;
+    color: @fg;
+}
+
+/* ── clock ── */
+#clock {
+    color: @yellow;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+/* ── cpu ── */
+#cpu {
+    color: @aqua;
+}
+
+#cpu.warning {
+    color: @orange;
+}
+
+#cpu.critical {
+    color: @red;
+}
+
+/* ── network ── */
+#network {
+    color: @green;
+}
+
+#network.disconnected {
+    color: @grey1;
+}
