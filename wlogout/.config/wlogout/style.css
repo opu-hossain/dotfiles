@@ -1,98 +1,98 @@
-/* wlogout - Gruvbox Dark Theme
-   Drop at: ~/.config/wlogout/style.css
-   Launch:  wlogout -b 5 -c 400 -r 400 -m 20
-*/
+/* ----------------------------------------------------
+ * wlogout - Gruvbox Dark (GTK3 Compatible)
+ * ---------------------------------------------------- */
 
-/* ── Gruvbox palette ─────────────────────────────────── */
 * {
-  font-family: "JetBrainsMono Nerd Font Propo", monospace;
-  font-size: 13px;
+  font-family: "JetBrainsMono Nerd Font Propo";
+  font-size: 17px;
+  font-weight: 300;
 }
 
-/* ── Overlay background ──────────────────────────────── */
-window {
-  background: rgba(29, 32, 33, 0.88); /* #1d2021 @ 88% — matches kitty bg_opacity */
+* {
+  text-shadow: none;
 }
 
-/* ── Button cards (100×110px as per your config) ─────── */
-button {
-  background: #282828;              /* --bg1 */
-  color: #ebdbb2;                   /* --fg  */
-  border: 1px solid #3c3836;        /* --bg2 */
-  border-radius: 8px;
-  margin: 6px;
-  padding: 16px 8px 10px;
-  min-width:  100px;
-  min-height: 110px;
-  background-repeat: no-repeat;
-  background-position: center 22px;
-  background-size: 36px;
-  transition: background 150ms ease,
-              border-color 150ms ease,
-              color 150ms ease,
-              box-shadow 150ms ease;
-}
-
-/* label sits below the icon */
+button,
+button:hover,
 button:focus,
-button:active,
-button:focus-visible {
+button:active {
+  outline: none;
+  box-shadow: none;
+  text-shadow: none;
+}
+
+/* Overlay */
+
+window {
+  background: rgba(29, 32, 33, 0.9);
+}
+
+/* ----------------------------------------------------
+ * Buttons
+ * ---------------------------------------------------- */
+
+button {
+  background-color: #282828;
+  color: #ebdbb2;
+
+  border: 2px solid #3c3836;
+  border-radius: 12px;
+
+  margin: 8px;
+  padding: 20px;
+
+  min-width: 110px;
+  min-height: 120px;
+
+  background-repeat: no-repeat;
+  background-position: center 28%;
+  background-size: 52px;
+
+  transition: 180ms;
+}
+
+button:focus,
+button:active {
   outline: none;
   box-shadow: none;
 }
 
-/* ── Hover — blue accent ─────────────────────────────── */
+/* ----------------------------------------------------
+ * Generic Hover
+ * ---------------------------------------------------- */
+
 button:hover {
-  background-color: #3c3836;        /* --bg2 */
-  border-color: #458588;            /* --blue */
+  background-color: #32302f;
   color: #458588;
-  box-shadow: 0 0 0 2px #45858844;
+  box-shadow: none;
+  text-shadow: none;
+  outline: none;
 }
 
-/* ── Active / pressed ────────────────────────────────── */
+/* ----------------------------------------------------
+ * Active
+ * ---------------------------------------------------- */
+
 button:active {
-  background-color: #504945;        /* --bg3 */
-  border-color: #689d6a;            /* --aqua */
-  color: #689d6a;
+  background-color: #3c3836;
 }
 
-/* ══ Per-action accent colors on hover ══════════════════
-   Each gets its own border + text color so the action
-   intent is visually obvious at a glance.               */
-
-#lock:hover {
-  border-color: #458588;   /* blue  */
-  color:        #458588;
-  box-shadow:   0 0 0 2px #45858844;
+#lock {
+  background-image: image(url("icons/lock.svg"));
 }
 
-#suspend:hover {
-  border-color: #98971a;   /* green */
-  color:        #98971a;
-  box-shadow:   0 0 0 2px #98971a44;
+#logout {
+  background-image: image(url("icons/logout.svg"));
 }
 
-#hibernate:hover {
-  border-color: #d79921;   /* yellow */
-  color:        #d79921;
-  box-shadow:   0 0 0 2px #d7992144;
+#suspend {
+  background-image: image(url("icons/suspend.svg"));
 }
 
-#logout:hover {
-  border-color: #d65d0e;   /* orange */
-  color:        #d65d0e;
-  box-shadow:   0 0 0 2px #d65d0e44;
+#reboot {
+  background-image: image(url("icons/reboot.svg"));
 }
 
-#reboot:hover {
-  border-color: #b16286;   /* purple */
-  color:        #b16286;
-  box-shadow:   0 0 0 2px #b1628644;
+#shutdown {
+  background-image: image(url("icons/shutdown.svg"));
 }
-
-#shutdown:hover {
-  border-color: #cc241d;   /* red    */
-  color:        #cc241d;
-  box-shadow:   0 0 0 2px #cc241d44;
-}
-
