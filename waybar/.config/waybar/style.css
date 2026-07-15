@@ -1,82 +1,123 @@
-@import "colors.css";
+/* --- Gruvbox Palette & Variables --- */
+@define-color bg #282828;
+@define-color bg-hover #3c3836;
+@define-color fg #ebdbb2;
+@define-color accent #458588;
+@define-color urgent #cc241d;
+@define-color text-dark #1d2021;
 
 * {
-    all: unset;
-    font-family: "Rubik", "JetBrainsMono Nerd Font Propo";
-    font-size: 13px;
-    font-weight: 500;
+  font-family: "JetBrainsMono Nerd Font", "Rubik", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 0;
+  min-height: 0;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 window#waybar {
-    background-color: @bg0;
-    color: @fg;
-    border-bottom: 2px solid @bg2;
+  background: transparent;
+  color: @fg;
 }
 
-/* ── shared pill base ── */
+/* --- Base Module Styling --- */
 .modules-left > widget > *,
 .modules-center > widget > *,
 .modules-right > widget > * {
-    padding: 4px 14px;
-    margin: 4px 3px;
-    border-radius: 6px;
-    background-color: @bg1;
-    color: @fg;
-    transition: background-color 150ms ease;
+  background-color: alpha(@bg, 0.85);
+  border-radius: 14px;
+  padding: 0 12px;
+  margin: 4px 2px;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ── workspaces ── */
+/* Hover effects for interactive modules */
+.modules-right > widget > *:hover,
+#clock:hover {
+  background-color: @bg-hover;
+  color: @accent;
+}
+
+/* --- Workspaces --- */
 #workspaces {
-    background: transparent;
-    padding: 0;
-    margin: 0;
+  padding: 0 4px;
 }
 
 #workspaces button {
-    padding: 4px 10px;
-    margin: 4px 2px;
-    border-radius: 6px;
-    background-color: @bg1;
-    color: @grey0;
-    font-weight: 500;
-}
-
-#workspaces button.active {
-    background-color: @blue;
-    color: @bg0;
-    font-weight: 700;
+  padding: 0 2px;
+  color: alpha(@fg, 0.5);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 #workspaces button:hover {
-    background-color: @bg3;
-    color: @fg;
+  color: @fg;
+  background: transparent;
+  text-shadow: 0 0 5px alpha(@fg, 0.3);
 }
 
-/* ── clock ── */
+#workspaces button.active {
+  color: @accent;
+  padding: 0 10px; /* Expands slightly when active */
+  text-shadow: 0 0 5px alpha(@accent, 0.4);
+}
+
+#workspaces button.urgent {
+  color: @urgent;
+}
+
+/* --- Window Title --- */
+#window {
+  color: alpha(@fg, 0.8);
+  font-weight: 500;
+  background: transparent;
+}
+
+/* --- Clock --- */
 #clock {
-    color: @yellow;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+  color: @fg;
+  font-weight: 700;
 }
 
-/* ── cpu ── */
+/* --- Right Side Modules --- */
 #cpu {
-    color: @aqua;
+  color: #b8bb26; /* Gruvbox Green */
 }
 
-#cpu.warning {
-    color: @orange;
+#memory {
+  color: #fabd2f; /* Gruvbox Yellow */
 }
 
-#cpu.critical {
-    color: @red;
-}
-
-/* ── network ── */
 #network {
-    color: @green;
+  color: #d3869b; /* Gruvbox Purple */
 }
 
 #network.disconnected {
-    color: @grey1;
+  color: @urgent;
+}
+
+/* --- Power Button --- */
+#custom-power {
+  background-color: @accent;
+  color: @text-dark;
+  padding: 0 14px 0 16px;
+  margin-right: 4px;
+}
+
+#custom-power:hover {
+  background-color: @fg;
+  color: @accent;
+}
+
+/* --- Tooltips --- */
+tooltip {
+  background: @bg;
+  border: 1px solid alpha(@accent, 0.5);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+tooltip label {
+  color: @fg;
 }

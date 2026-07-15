@@ -1,41 +1,72 @@
 {
-    "spacing": 0,
-    "modules-left": [
-        "hyprland/workspaces"
-    ],
-    "modules-center": [
-        "clock"
-    ],
-    "modules-right": [
-        "cpu",
-        "network"
-    ],
+    "layer": "top",
+    "position": "top",
+    "height": 28,
+    "spacing": 4,
+    "exclusive": true,
+    "gtk-layer-shell": true,
+    "passthrough": false,
+    "fixed-center": true,
+
+    "modules-left": ["hyprland/workspaces", "hyprland/window"],
+    "modules-center": ["clock"],
+    "modules-right": ["cpu", "memory", "network", "custom/power"],
 
     "hyprland/workspaces": {
-        "format": "{name}",
+        "format": "{icon}",
+        "on-click": "activate",
+        "format-icons": {
+            "active": "",
+            "default": "",
+            "empty": ""
+        },
         "persistent-workspaces": {
-            "*": 5
+            "*": 4
+        }
+    },
+
+    "hyprland/window": {
+        "format": " {title} ",
+        "max-length": 40,
+        "rewrite": {
+            "": " 󰇄 Desktop "
         }
     },
 
     "clock": {
-        "interval": 60,
-        "format": "{:%I:%M %p}"
+        "format": "{:%I:%M %p}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "month",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span color='#ebdbb2'><b>{}</b></span>",
+                "days": "<span color='#ebdbb2'><b>{}</b></span>",
+                "today": "<span color='#458588'><b><u>{}</u></b></span>"
+            }
+        }
     },
 
     "cpu": {
-        "interval": 2,
-        "format": "CPU {usage}%"
+        "format": "  {usage}%",
+        "interval": 2
+    },
+
+    "memory": {
+        "format": "  {}%",
+        "interval": 2
     },
 
     "network": {
-        "interface": "enp34s0",
-        "format-wifi": "{essid} {signalStrength}%",
-        "format-ethernet": "{ipaddr}",
-        "format-disconnected": "disconnected",
-        "tooltip-format-ethernet": "{ifname} via {gwaddr}",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
-        "tooltip-format-disconnected": "Disconnected",
-        "max-length": 40
+        "format-wifi": "  {signalStrength}%",
+        "format-ethernet": "󰈀  Wired",
+        "format-disconnected": "󰤭  Offline",
+        "tooltip-format": "{essid} - {ifname} via {gwaddr}"
+    },
+
+    "custom/power": {
+        "format": " ",
+        "on-click": "wlogout --buttons-per-row 5 --protocol layer-shell",
+        "tooltip": false
     }
 }
