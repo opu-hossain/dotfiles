@@ -155,6 +155,10 @@ function y() {
 }
 
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+export PATH="/home/walarch/.local/bin:$PATH"
+
+export ANDROID_HOME="$HOME/Android/Sdk"
+export PATH="$ANDROID_HOME/platform-tools/bin:$ANDROID_HOME/platform-tools:$PATH"
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
@@ -164,3 +168,7 @@ export SDKMAN_DIR="$HOME/.sdkman"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/walarch/.local/bin:$PATH"

@@ -19,9 +19,16 @@ vim.opt.undofile = true
 
 vim.g.mapleader = " "
 vim.g.localmapleader = " "
+vim.opt.tags = "./tags;,tags"
 
 -- custom remaps
 vim.keymap.set("n", "<leader>fd", vim.cmd.Ex)
+
+-- Clear highlights with the Escape key
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear search highlights" })
+
+-- visual block mode with just block
+vim.keymap.set("n", "b", "<C-v>")
 
 -- Splitting (tmux-style: intuitive single-key creation)
 vim.keymap.set("n", "<leader>sv", "<cmd>vsplit<CR>")
