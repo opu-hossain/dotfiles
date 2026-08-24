@@ -86,7 +86,7 @@
     },
 
     "pulseaudio": {
-        "format": " {volume}%",
+        "format": "  {volume}%",
         "format-muted": " Muted",
         "scroll-step": 5,
         "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
