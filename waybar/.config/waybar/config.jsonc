@@ -10,7 +10,7 @@
 
     "modules-left": ["hyprland/workspaces", "hyprland/window"],
     "modules-center": ["clock"],
-    "modules-right": ["cpu", "memory", "network", "custom/power"],
+    "modules-right": ["cpu", "memory", "custom/updates", "custom/network", "pulseaudio", "custom/power"],
 
     "hyprland/workspaces": {
         "format": "{icon}",
@@ -49,19 +49,48 @@
 
     "cpu": {
         "format": "  {usage}%",
-        "interval": 2
+        "interval": 2,
+        "states": {
+            "warning": 75,
+            "critical": 90
+        }
     },
 
     "memory": {
         "format": "  {}%",
-        "interval": 2
+        "interval": 2,
+        "states": {
+            "warning": 75,
+            "critical": 90
+        }
     },
 
-    "network": {
-        "format-wifi": "  {signalStrength}%",
-        "format-ethernet": "󰈀  Wired",
-        "format-disconnected": "󰤭  Offline",
-        "tooltip-format": "{essid} - {ifname} via {gwaddr}"
+    "custom/updates": {
+        "format": "{icon}{text}",
+        "format-icons": {
+            "clean": "",
+            "pending": ""
+        },
+        "exec": "$HOME/.config/waybar/scripts/updates.sh",
+        "return-type": "json",
+        "interval": 1800,
+        "signal": 8,
+        "on-click": "kitty -e bash -c 'if command -v yay &>/dev/null; then yay -Syu; elif command -v paru &>/dev/null; then paru -Syu; else sudo pacman -Syu; fi; echo; read -n1 -p \"Press any key to close...\"'",
+        "tooltip": true
+    },
+
+    "custom/network": {
+        "exec": "$HOME/.config/waybar/scripts/netspeed.sh",
+        "return-type": "json",
+        "tooltip": true
+    },
+
+    "pulseaudio": {
+        "format": " {volume}%",
+        "format-muted": " Muted",
+        "scroll-step": 5,
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right": "pavucontrol"
     },
 
     "custom/power": {

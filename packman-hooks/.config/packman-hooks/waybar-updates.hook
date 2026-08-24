@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Refreshing waybar update indicator...
+When = PostTransaction
+Exec = /usr/bin/pkill -RTMIN+8 waybar
