@@ -1,65 +1,103 @@
 # dotfiles
 
-Personal configs for an Arch Linux + Hyprland desktop, managed with GNU Stow (https://www.gnu.org/software/stow/).
+Personal configs and bootstrap installer for an Arch Linux + Hyprland desktop environment, managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 ## Stack
 
-- WM: Hyprland
-- Bar: Waybar
-- Launcher: Wofi
-- Logout menu: wlogout
-- Notifications: SwayNC
-- Terminal: Kitty
-- Multiplexer: tmux
-- Shell: Zsh (zsh-vi-mode)
-- Editor: Neovim (lazy.nvim)
-- Theme: Gruvbox Dark throughout
+- **WM:** Hyprland
+- **Bar:** Waybar
+- **Launcher:** Wofi
+- **Logout menu:** wlogout
+- **Notifications:** SwayNC
+- **Terminal:** Kitty
+- **Shell:** Zsh (`zsh-vi-mode`)
+- **Editor:** Neovim (`lazy.nvim`)
+- **Theme:** Everforest / Adwaita Dark
 
 ## Structure
 
-Each top-level folder is a Stow "package" that mirrors its target location under $HOME:
+Each top-level directory is a Stow package mirroring its target location under `$HOME`:
 
+```text
 dotfiles/
-- hypr/.config/hypr
-- kitty/.config/kitty
-- nvim/.config/nvim
-- waybar/.config/waybar
-- wofi/.config/wofi
-- wlogout/.config/wlogout
-- swaync/.config/swaync
-- tmux/.tmux.conf
-- zsh/.zshrc
+├── hypr/.config/hypr/
+├── kitty/.config/kitty/
+├── nvim/.config/nvim/
+├── swaync/.config/swaync/
+├── tmux/.tmux.conf
+├── waybar/.config/waybar/
+├── wallpapers/Pictures/Wallpapers/
+├── wlogout/.config/wlogout/
+├── wofi/.config/wofi/
+├── zsh/.zshrc
+├── install.sh
+└── optional-packages.txt
+````
 
-## Fresh install
+---
 
-1. Install prerequisites
+## Quick Start (Automated Install)
 
-   sudo pacman -S stow git
+On a fresh Arch Linux minimal installation, log in as your regular user (do **not** run as `root`):
 
-2. Clone this repo
+```bash
+# 1. Install git & clone repo
+sudo pacman -S --needed git
+git clone https://github.com/opu-hossain/dotfiles.git ~/dotfiles
+cd ~/dotfiles
 
-   git clone https://github.com/opu-hossain/dotfiles.git ~/dotfiles
-   cd ~/dotfiles
+# 2. Make the installer executable & run
+chmod +x install.sh
+./install.sh
+```
 
-3. Symlink everything into place
+### What `install.sh` handles automatically
 
-   stow hypr kitty nvim waybar wofi wlogout swaync tmux zsh
+* Installs `yay` (AUR helper) and base build tools.
+* Sets up the PipeWire audio stack (resolving `pipewire-jack` / `jack2` conflicts).
+* Installs the desktop environment (Hyprland, Waybar, SDDM, SwayNC, fonts, etc.).
+* Installs CLI tools, development runtimes (`nvm`, `miniconda3`), and SDKMAN.
+* Stows all configuration packages to `$HOME`.
+* Configures system/user services, GTK themes, and default shell (`zsh`).
 
-That's it — all configs are now live symlinks back into this repo.
+---
 
-## Adding a new config later
+## Post-Install Steps
 
-   cd ~/dotfiles
-   mkdir -p NAME/.config/NAME
-   mv ~/.config/NAME/* NAME/.config/NAME/
-   rmdir ~/.config/NAME
-   stow NAME
-   git add .
-   git commit -m "Add NAME config"
-   git push
+1. **Reboot your system** to initialize SDDM, GTK themes, and system services properly:
+
+```bash
+sudo reboot
+```
+
+2. **Optional Software:** Personal software (IDEs, virtualization, database tools, etc.) is kept out of the base installer to keep it lean. Install additional packages as needed:
+
+```bash
+yay -S --needed $(grep -v '^#' optional-packages.txt)
+```
+
+---
+
+## Adding a New Config
+
+To track a new configuration folder with Stow:
+
+```bash
+cd ~/dotfiles
+mkdir -p NAME/.config/NAME
+mv ~/.config/NAME/* NAME/.config/NAME/
+rmdir ~/.config/NAME
+stow NAME
+git add .
+git commit -m "Add NAME config"
+git push
+```
+
+---
 
 ## Notes
 
-- nvim/lazy-lock.json is tracked intentionally — it pins exact plugin commit hashes so a fresh install reproduces the same plugin versions.
-- Neovim's runtime state (shada, undo history, swap files) lives at ~/.local/state/nvim/ and is NOT backed up here — this repo only covers config, not session history.
-- If "stow PACKAGE" fails with "existing target is not a symlink," a real file/dir already exists at that path — back it up or remove it first, then re-run stow.
+* **Stow conflicts:** If `stow` throws an `existing target is not a symlink` error, a real file or directory exists at that location. Back it up or remove it first, then re-run `stow <package>`.
+* **Neovim state:** `nvim/lazy-lock.json` is tracked to pin plugin commit hashes. Runtime state (undo history, shada files, swap) is stored locally at `~/.local/state/nvim/` and ignored.
+* **Script Idempotency:** `install.sh` is safe to re-run anytime—it automatically skips packages and configurations that are already set up.
+
