@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 #
 # Bootstrap script for walarch's Arch + Hyprland dotfiles.
-# Built from an actual audit of the reference machine (pacman -Qqen /
-# -Qqem, systemctl, gsettings, sddm config, etc.) rather than guessed
-# from config files alone — see audit.sh to regenerate that data if
-# this ever needs to be refreshed.
+#
+# Scope, on purpose: this installs and configures the DESKTOP ENVIRONMENT
+# and the DEV ENVIRONMENT (editor, shell, build tooling) — the stuff that's
+# tedious and error-prone to redo by hand, and that your configs actively
+# depend on to work correctly. It does NOT install personal software
+# (IDEs, virtualization, database servers, office/media apps) — see
+# optional-packages.txt for that list, installed on your own schedule when
+# you actually need something from it.
 #
 # Run as your normal user (NOT root) from inside the cloned repo:
 #
@@ -45,84 +49,59 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-log "Installing all packages (official repos + AUR, via yay)..."
-# This list is the literal explicit-install set from the reference
-# machine (pacman -Qqen + pacman -Qqem), not a guess from config files.
+# The audio stack goes first, in its own isolated transaction. pipewire-jack
+# and jack2 both provide "jack" and conflict; if jack2 gets pulled into a
+# huge combined transaction as a dependency of something else, pacman hits
+# an unresolvable conflict and stalls waiting for input --noconfirm can't
+# answer. Installing this stack alone first means nothing else has a chance
+# to pull jack2 in ahead of it.
+log "Installing audio stack first (avoids a pipewire-jack/jack2 conflict)..."
+yay -S --needed --noconfirm pipewire pipewire-alsa pipewire-jack pipewire-pulse wireplumber alsa-utils
+
+# ---------------------------------------------------------------------------
+log "Installing the desktop + dev environment..."
 
 PACKAGES=(
-    # Kernels / microcode — amd-ucode is AMD-specific; swap for
-    # intel-ucode if this is ever run on an Intel machine.
-    base base-devel linux linux-firmware linux-lts amd-ucode
-
     # Hyprland desktop
     hyprland waybar awww hypridle hyprlock wlogout wofi swaync hyprshot
-    xdg-desktop-portal-hyprland grim slurp
-    xdg-user-dirs
+    xdg-desktop-portal-hyprland grim slurp xdg-user-dirs
 
     # Terminal / shell / editor
     kitty zsh tmux neovim stow xterm
 
+    # SSH client — needed just to `git clone` this repo over SSH
+    openssh
+
     # zsh plugins (zsh-vi-mode-git specifically, not the stable zsh-vi-mode)
     zsh-autosuggestions zsh-syntax-highlighting zsh-vi-mode-git
 
-    # CLI tools
-    eza fastfetch fzf yazi wl-clipboard ripgrep fd zoxide tldr
-    bind time strace rsync wget unzip zip 7zip openbsd-netcat nload
-    htop btop man-db github-cli jq
+    # CLI tools your configs/keybinds actually invoke
+    eza fastfetch fzf yazi wl-clipboard ripgrep fd zoxide
     brightnessctl playerctl pacman-contrib
 
-    # Dev / build tooling (nvim + your C projects)
-    clang cmake ctags lazygit criterion cjson swig libxcrypt-compat
+    # Build tooling nvim's LSP/DAP/telescope setup depends on directly
+    clang cmake ctags lazygit
 
-    # Java / JetBrains
-    jdk-openjdk jdk17-openjdk jetbrains-toolbox
-
-    # NOTE: "code" is VS Code. On the reference machine this resolved as
-    # a native (non-AUR) package, which usually means a third-party
-    # binary repo (commonly chaotic-aur) is configured in pacman.conf.
-    # Without that repo, yay will try to build it from the AUR under
-    # some other package name and may fail outright. Verify this
-    # resolves before trusting it — see the closing notes.
-    code
-
-    # Audio / network stack
-    pipewire pipewire-alsa pipewire-jack pipewire-pulse wireplumber
-    networkmanager alsa-utils dnsmasq iptables openssh
+    # Networking (NetworkManager only — no dnsmasq/iptables, those were
+    # pulled in by the virtualization stack, which is now optional)
+    networkmanager
 
     # Desktop essentials / theming
-    sddm sddm-silent-theme gnome-keyring seahorse nautilus
-    qt5ct qt6-wayland qt6ct kvantum zenity flatpak flatpak-xdg-utils
-    gimp
+    sddm sddm-silent-theme gnome-keyring nautilus qt5ct qt6-wayland qt6ct
 
-    # Fonts
-    ttf-jetbrains-mono-nerd ttf-roboto-mono-nerd otf-comicshanns-nerd
-    ttf-dejavu ttf-liberation noto-fonts noto-fonts-emoji
-    ttf-google-sans ttf-rubik-vf
-
-    # Filesystem / disk / boot
-    dosfstools ntfs-3g efibootmgr zram-generator
-
-    # Virtualization
-    qemu-full virt-manager virt-viewer vde2
-
-    # Media
-    vlc vlc-plugins-all kdenlive gst-libav gst-plugins-bad gst-plugins-ugly
-    webkit2gtk-4.1 resvg
-
-    # Database
-    postgresql
+    # The one font your configs actually reference (kitty.conf)
+    ttf-jetbrains-mono-nerd
 
     # GPU (AMD-specific — Vega/Renoir on the reference machine; swap for
     # the Intel/Nvidia equivalents on different hardware)
-    vulkan-radeon opencl-mesa clinfo
+    vulkan-radeon opencl-mesa
 
-    # Dev tool version managers that DO have proper packages
+    # Dev tool version managers that have proper packages
     # (SDKMAN doesn't — that's handled separately below)
     nvm miniconda3
 
-    # Misc apps
-    blanket qbittorrent libreoffice-still zathura zathura-pdf-mupdf
-    firefox pavucontrol anydesk-bin localsend
+    # Your actual browser
+    firefox pavucontrol
 )
 
 yay -S --needed --noconfirm "${PACKAGES[@]}"
@@ -131,19 +110,6 @@ yay -S --needed --noconfirm "${PACKAGES[@]}"
 log "Enabling system services..."
 sudo systemctl enable --now NetworkManager
 sudo systemctl enable sddm
-sudo systemctl enable libvirtd
-sudo systemctl enable fstrim.timer
-sudo systemctl enable systemd-networkd systemd-networkd-wait-online systemd-resolved
-sudo systemctl enable systemd-timesyncd
-
-# ---------------------------------------------------------------------------
-log "Setting up PostgreSQL..."
-if [ ! -d /var/lib/postgres/data ] || [ -z "$(ls -A /var/lib/postgres/data 2>/dev/null)" ]; then
-    sudo -iu postgres initdb -D /var/lib/postgres/data
-else
-    log "  data directory already initialized, skipping initdb"
-fi
-sudo systemctl enable --now postgresql
 
 # ---------------------------------------------------------------------------
 log "Enabling user services..."
@@ -214,19 +180,24 @@ fi
 # ---------------------------------------------------------------------------
 log "Done."
 echo ""
+echo "This installed the desktop + dev environment only. Your other"
+echo "software (IDEs, virtualization, database, office/media apps) is"
+echo "listed in optional-packages.txt — install it on your own schedule:"
+echo ""
+echo "  yay -S --needed \$(grep -v '^#' optional-packages.txt)"
+echo ""
 echo "Things that genuinely need your input, not guessed:"
-echo "  - 'code' (VS Code) resolved as a native package on the reference"
-echo "    machine, which usually means a third-party repo (e.g. chaotic-aur)"
-echo "    is configured in pacman.conf. This script doesn't set that up —"
-echo "    if 'yay -S code' fails here, that's why."
+echo "  - 'code' (VS Code, in optional-packages.txt) resolved as a native"
+echo "    package on the reference machine, which usually means a"
+echo "    third-party repo (e.g. chaotic-aur) is configured in pacman.conf."
+echo "    This script doesn't set that up — if it fails to install later,"
+echo "    that's why."
 echo "  - SDDM: the outer theme (silent) is now linked, but I don't have"
 echo "    /usr/share/sddm/themes/silent/theme.conf, which is what actually"
 echo "    selects the everforest color preset inside that theme. Paste that"
 echo "    file and I'll track it too."
 echo "  - qt5ct/qt6ct: installed, but no config file existed to restore —"
 echo "    open qt5ct once and pick a style."
-echo "  - zram-generator.conf isn't captured — if you customized it beyond"
-echo "    defaults, paste /etc/systemd/zram-generator.conf and I'll add it."
 echo "  - Confirm your wallpaper images landed at ~/Pictures/Wallpapers/"
 echo "  - Reboot (or log out/in) so the shell, SDDM, GTK theme, and service"
 echo "    changes all take effect"
