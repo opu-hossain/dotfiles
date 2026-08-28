@@ -38,6 +38,32 @@ log "Installing base-devel and git (needed to build an AUR helper)..."
 sudo pacman -S --needed --noconfirm base-devel git
 
 # ---------------------------------------------------------------------------
+# A fresh Arch install's default gpg config has no keyserver configured at
+# all in some cases, or one that's flaky. AUR builds that carry validpgpkeys
+# (wlogout does) need gpg to actually be able to fetch those keys, so this
+# has to be sorted before any makepkg build runs — including yay's own.
+log "Configuring a reliable GPG keyserver for AUR package signature checks..."
+mkdir -p "$HOME/.gnupg"
+if ! grep -q "^keyserver" "$HOME/.gnupg/gpg.conf" 2>/dev/null; then
+    echo "keyserver hkps://keyserver.ubuntu.com" >> "$HOME/.gnupg/gpg.conf"
+fi
+
+import_pgp_key() {
+    local keyid="$1"
+    local servers=(hkps://keyserver.ubuntu.com hkps://keys.openpgp.org hkp://keyserver.ubuntu.com:80)
+    for server in "${servers[@]}"; do
+        if gpg --keyserver "$server" --recv-keys "$keyid" &>/dev/null; then
+            return 0
+        fi
+    done
+    warn "  could not import PGP key $keyid from any keyserver — a later AUR build may fail on it"
+    return 1
+}
+
+# wlogout's PGP key specifically — hit this exact failure during testing.
+import_pgp_key F4FDB18A9937358364B276E9E25D679AF73C6D2F
+
+# ---------------------------------------------------------------------------
 if ! command -v yay &>/dev/null; then
     log "yay not found — building it from the AUR..."
     tmpdir="$(mktemp -d)"
@@ -75,9 +101,10 @@ PACKAGES=(
     # zsh plugins (zsh-vi-mode-git specifically, not the stable zsh-vi-mode)
     zsh-autosuggestions zsh-syntax-highlighting zsh-vi-mode-git
 
-    # CLI tools your configs/keybinds actually invoke
-    eza fastfetch fzf yazi wl-clipboard ripgrep fd zoxide
-    brightnessctl playerctl pacman-contrib zip unzip
+    # CLI tools your configs/keybinds actually invoke, plus unzip/zip
+    # (hard prerequisites for the SDKMAN installer further down)
+    eza fastfetch fzf yazi wl-clipboard ripgrep fd zoxide unzip zip
+    brightnessctl playerctl pacman-contrib
 
     # Build tooling nvim's LSP/DAP/telescope setup depends on directly
     clang cmake ctags lazygit
