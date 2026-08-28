@@ -77,7 +77,7 @@ PACKAGES=(
 
     # CLI tools your configs/keybinds actually invoke
     eza fastfetch fzf yazi wl-clipboard ripgrep fd zoxide
-    brightnessctl playerctl pacman-contrib
+    brightnessctl playerctl pacman-contrib zip unzip
 
     # Build tooling nvim's LSP/DAP/telescope setup depends on directly
     clang cmake ctags lazygit
