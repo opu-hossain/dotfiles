@@ -135,7 +135,7 @@ return {
 				vim.lsp.enable(server)
 			end
 
-			-- clangd from system (C/C++)
+			-- clangd from system (C/C++) - DISABLED
 			vim.lsp.config("clangd", {
 				capabilities = caps,
 				cmd = { "clangd" },
