@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Io
-import "../" // Theme
+import ".." // Theme
 
 Row {
     spacing: 4
@@ -10,16 +10,27 @@ Row {
     property var prevTotal: -1
 
     Text {
+        anchors.verticalCenter: parent.verticalCenter
         text: "CPU"
         color: Theme.fgMuted
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize
+        font.weight: Font.Medium
     }
+
     Text {
+        anchors.verticalCenter: parent.verticalCenter
         text: Math.round(usage) + "%"
-        color: usage > 85 ? Theme.accent : Theme.fg
+        color: usage > 90 ? Theme.danger
+             : usage > 75 ? Theme.warning
+             : Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize
+        font.pixelSize: Theme.fontSize + 1     // matches clock
+        font.bold: true                         // matches clock
+        width: 36
+        horizontalAlignment: Text.AlignLeft
+
+        Behavior on color { ColorAnimation { duration: 250 } }
     }
 
     Process {
@@ -27,11 +38,9 @@ Row {
         command: ["sh", "-c", "grep '^cpu ' /proc/stat"]
         stdout: SplitParser {
             onRead: data => {
-                // line looks like: cpu  user nice system idle iowait irq softirq ...
                 const parts = data.trim().split(/\s+/).slice(1).map(Number)
                 const idle = parts[3]
                 const total = parts.reduce((a, b) => a + b, 0)
-
                 if (prevTotal >= 0) {
                     const totalDelta = total - prevTotal
                     const idleDelta = idle - prevIdle

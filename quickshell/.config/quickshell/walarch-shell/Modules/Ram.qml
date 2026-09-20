@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Io
-import "../" // Theme
+import ".." // Theme
 
 Row {
     spacing: 4
@@ -8,16 +8,27 @@ Row {
     property real usage: 0
 
     Text {
+        anchors.verticalCenter: parent.verticalCenter
         text: "RAM"
         color: Theme.fgMuted
         font.family: Theme.fontFamily
         font.pixelSize: Theme.fontSize
+        font.weight: Font.Medium
     }
+
     Text {
+        anchors.verticalCenter: parent.verticalCenter
         text: Math.round(usage) + "%"
-        color: usage > 85 ? Theme.accent : Theme.fg
+        color: usage > 90 ? Theme.danger
+             : usage > 75 ? Theme.warning
+             : Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize
+        font.pixelSize: Theme.fontSize + 1
+        font.bold: true
+        width: 36
+        horizontalAlignment: Text.AlignLeft
+
+        Behavior on color { ColorAnimation { duration: 250 } }
     }
 
     Process {

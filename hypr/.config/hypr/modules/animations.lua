@@ -125,3 +125,9 @@ hl.config({
 		--           NAME,          ONOFF, SPEED, CURVE,        [STYLE]
 	},
 })
+
+hl.layer_rule({
+	name = "no-anim-power-menu",
+	match = { namespace = "quickshell" },
+	no_anim = true,
+})

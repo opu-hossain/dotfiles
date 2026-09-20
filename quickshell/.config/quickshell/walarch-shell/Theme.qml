@@ -1,23 +1,22 @@
 pragma Singleton
 import QtQuick
 
-// Single source of truth for color/font values. Every widget imports this
-// instead of hardcoding hex codes, so the whole shell restyles from one file.
 QtObject {
     // Gruvbox Dark — matches kitty/nvim/tmux/waybar
     readonly property color bg: "#1d2021"
-    readonly property color bgSoft: "#282828"      // slightly lighter panel bg
+    readonly property color bgSoft: "#282828"
     readonly property color fg: "#ebdbb2"
     readonly property color fgMuted: "#a89984"
-    readonly property color accent: "#d79921"      // the unified yellow accent
-    readonly property color accentAlt: "#458588"   // blue, used sparingly (tmux session name, active tab)
-    readonly property color danger: "#cc241d"      // e.g. power/logout confirm
+
+    readonly property color accent: "#458588"      // blue — primary accent
+    readonly property color accentAlt: "#d79921"   // yellow — secondary
+    readonly property color danger: "#cc241d"
+    readonly property color warning: "#fabd2f"
 
     readonly property string fontFamily: "JetBrainsMono Nerd Font Propo"
-    readonly property int fontSize: 10
+    readonly property int fontSize: 12             // was 10 — this is the main visibility fix
 
-    // Shared geometry so bar height / corner radius / spacing stay consistent
-    readonly property int barHeight: 32
+    readonly property int barHeight: 36            // was 32, room for the larger type
     readonly property int radius: 6
     readonly property int spacing: 8
 }

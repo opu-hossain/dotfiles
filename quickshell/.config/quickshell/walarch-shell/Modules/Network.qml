@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Io
-import "../" // Theme
+import ".." // Theme
 
 Row {
     spacing: 4
@@ -16,13 +16,14 @@ Row {
     }
 
     Text {
+        anchors.verticalCenter: parent.verticalCenter
         text: "↓" + fmt(rxKBps) + " ↑" + fmt(txKBps)
         color: Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize
+        font.pixelSize: Theme.fontSize + 1
+        font.bold: true
     }
 
-    // Runs once at startup to find the interface carrying the default route
     Process {
         id: ifaceProc
         command: ["sh", "-c", "ip route | awk '/^default/ {print $5; exit}'"]
@@ -39,17 +40,13 @@ Row {
             "cat /sys/class/net/" + iface + "/statistics/rx_bytes " +
             "/sys/class/net/" + iface + "/statistics/tx_bytes"
         ]
-        // StdioCollector (not SplitParser) because we need both lines
-        // together at once to diff rx/tx as a pair
         stdout: StdioCollector {
             onStreamFinished: {
                 const lines = this.text.trim().split("\n")
                 if (lines.length < 2) return
                 const rx = parseInt(lines[0])
                 const tx = parseInt(lines[1])
-
                 if (prevRx >= 0) {
-                    // bytes/2s -> KB/s
                     rxKBps = (rx - prevRx) / 1024 / 2
                     txKBps = (tx - prevTx) / 1024 / 2
                 }

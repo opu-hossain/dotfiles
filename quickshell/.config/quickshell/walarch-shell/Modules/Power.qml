@@ -1,5 +1,5 @@
 import QtQuick
-import "../" // Theme, PowerMenuState
+import ".." // Theme, PowerMenuState
 
 Item {
     implicitWidth: label.implicitWidth + 8
