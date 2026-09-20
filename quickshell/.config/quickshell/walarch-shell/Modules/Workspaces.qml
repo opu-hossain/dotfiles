@@ -25,7 +25,7 @@ Row {
         return out
     }
 
-    // Mode block simulator at the far left
+    // Leftmost Mode Block
     Rectangle {
         height: Theme.barHeight
         width: modeText.implicitWidth + 32
@@ -60,7 +60,7 @@ Row {
 
             height: Theme.barHeight
             width: wsText.implicitWidth + 16
-            color: modelData.focused ? Theme.bgSoft : Theme.bg
+            color: modelData.focused ? Theme.bgSoft : "transparent"  // Transparent for inactive tabs
 
             Text {
                 id: wsText

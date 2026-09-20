@@ -17,7 +17,7 @@ ShellRoot {
                 right: true
             }
             implicitHeight: Theme.barHeight
-            color: Theme.bgHard
+            color: "transparent"  // Makes the empty space transparent
 
             // Left Section (Mode + Workspaces + Window Title)
             Row {
@@ -29,7 +29,7 @@ ShellRoot {
                 Modules.WindowTitle {}
             }
 
-            // Right Section (System Metrics + Network + Time at Far Right)
+            // Right Section (System Metrics + Network + Time)
             Row {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
