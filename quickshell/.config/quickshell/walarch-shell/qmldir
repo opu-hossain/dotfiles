@@ -1,0 +1,8 @@
+module walarch-shell
+singleton Theme 1.0 Theme.qml
+singleton PowerMenuState 1.0 PowerMenuState.qml
+singleton LauncherState 1.0 LauncherState.qml
+PowerCard 1.0 PowerCard.qml
+PowerOverlay 1.0 PowerOverlay.qml
+Launcher 1.0 Launcher.qml
+Notifications 1.0 Notifications.qml

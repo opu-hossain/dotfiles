@@ -8,20 +8,21 @@
 local mainMod = "ALT" -- Sets "Windows" key as main modifier
 local terminal = "kitty"
 local fileManager = "nautilus"
-local menu = "wofi --show drun"
+local menu = "qs -c walarch-shell ipc call launcher toggle"
+local powerMenu = "qs -c walarch-shell ipc call power toggle"
 local browser = "firefox"
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Binds/ for more
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + I", hl.dsp.exec_cmd(browser))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("wlogout --buttons-per-row 5 --protocol layer-shell"))
+hl.bind(mainMod .. " + M", hl.dsp.exec_cmd(powerMenu))
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + A", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + SHIFT + J", hl.dsp.layout("togglesplit"))
-hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("~/.config/waybar/scripts/launcher.sh"))
+hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind("SUPER + s", hl.dsp.exec_cmd("hyprshot -m region"))
 
 -- Move focus with mainMod + arrow keys

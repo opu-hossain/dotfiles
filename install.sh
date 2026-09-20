@@ -20,7 +20,7 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STOW_PACKAGES=(hypr kitty nvim swaync tmux waybar wlogout wofi zsh packman-hooks wallpapers)
+STOW_PACKAGES=(hypr kitty nvim tmux quickshell zsh packman-hooks wallpapers)
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$1"; }
 warn() { printf '\033[1;33m==> WARNING:\033[0m %s\n' "$1"; }
@@ -89,7 +89,7 @@ log "Installing the desktop + dev environment..."
 
 PACKAGES=(
     # Hyprland desktop
-    hyprland waybar awww hypridle hyprlock wlogout wofi swaync hyprshot
+    hyprland quickshell awww hypridle hyprlock hyprshot
     xdg-desktop-portal-hyprland grim slurp xdg-user-dirs
 
     # Terminal / shell / editor
@@ -174,7 +174,6 @@ done
 
 # ---------------------------------------------------------------------------
 log "Making scripts executable..."
-chmod +x "$HOME/.config/waybar/scripts/"*.sh 2>/dev/null || true
 chmod +x "$HOME/.config/hypr/scripts/"*.sh 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
