@@ -2,50 +2,43 @@ import QtQuick
 import Quickshell.Services.Pipewire
 import ".." // Theme
 
-Item {
+Rectangle {
     id: root
+    height: Theme.barHeight
+    width: volRow.implicitWidth + 20
+    color: Theme.bgSoft
 
     property var sink: Pipewire.defaultAudioSink
 
-    implicitWidth: content.implicitWidth
-    implicitHeight: content.implicitHeight
-
-    PwObjectTracker {
-        objects: [root.sink]
-    }
+    PwObjectTracker { objects: [root.sink] }
 
     Row {
-        id: content
-        spacing: 4
+        id: volRow
+        anchors.centerIn: parent
+        spacing: 6
 
         Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.sink?.audio.muted ? "MUTE" : "VOL"
-            color: root.sink?.audio.muted ? Theme.accent : Theme.fgMuted
-            font.family: Theme.fontFamily
-            font.pixelSize: Theme.fontSize
-            font.weight: Font.Medium
-
-            Behavior on color { ColorAnimation { duration: 250 } }
-        }
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.sink?.audio ? Math.round(root.sink.audio.volume * 100) + "%" : "--"
-            color: root.sink?.audio.muted ? Theme.accent : Theme.fg
+            text: "VOL"
+            color: root.sink?.audio.muted ? Theme.danger : Theme.fgMuted
             font.family: Theme.fontFamily
             font.pixelSize: Theme.fontSize + 1
             font.bold: true
-            width: 36
-            horizontalAlignment: Text.AlignLeft
+        }
 
-            Behavior on color { ColorAnimation { duration: 250 } }
+        Text {
+            text: root.sink?.audio 
+                ? (root.sink.audio.muted ? "MUTE" : Math.round(root.sink.audio.volume * 100) + "%") 
+                : "--"
+            color: root.sink?.audio.muted ? Theme.danger : Theme.fg
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSize + 2
+            font.bold: true
         }
     }
 
     MouseArea {
         anchors.fill: parent
-        acceptedButtons: Qt.LeftButton
+        hoverEnabled: true
         onClicked: {
             if (root.sink?.ready && root.sink?.audio)
                 root.sink.audio.muted = !root.sink.audio.muted

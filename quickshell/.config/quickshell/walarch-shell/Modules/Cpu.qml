@@ -2,35 +2,35 @@ import QtQuick
 import Quickshell.Io
 import ".." // Theme
 
-Row {
-    spacing: 4
+Rectangle {
+    height: Theme.barHeight
+    width: cpuRow.implicitWidth + 20
+    color: Theme.bgSoft
 
     property real usage: 0
     property var prevIdle: -1
     property var prevTotal: -1
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: "CPU"
-        color: Theme.fgMuted
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize
-        font.weight: Font.Medium
-    }
+    Row {
+        id: cpuRow
+        anchors.centerIn: parent
+        spacing: 6
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: Math.round(usage) + "%"
-        color: usage > 90 ? Theme.danger
-             : usage > 75 ? Theme.warning
-             : Theme.fg
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize + 1     // matches clock
-        font.bold: true                         // matches clock
-        width: 36
-        horizontalAlignment: Text.AlignLeft
+        Text {
+            text: "CPU"
+            color: Theme.fgMuted
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSize + 1
+            font.bold: true
+        }
 
-        Behavior on color { ColorAnimation { duration: 250 } }
+        Text {
+            text: Math.round(usage) + "%"
+            color: usage > 90 ? Theme.danger : usage > 50 ? Theme.warning : Theme.fg
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSize + 2
+            font.bold: true
+        }
     }
 
     Process {

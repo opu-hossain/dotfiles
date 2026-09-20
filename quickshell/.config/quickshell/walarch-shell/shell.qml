@@ -17,30 +17,23 @@ ShellRoot {
                 right: true
             }
             implicitHeight: Theme.barHeight
-            color: Theme.bg
+            color: Theme.bgHard
 
-            // Left: workspaces + focused window title
+            // Left Section (Mode + Workspaces + Window Title)
             Row {
                 anchors.left: parent.left
-                anchors.leftMargin: Theme.spacing * 2
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: Theme.spacing * 2
+                spacing: 1
 
                 Modules.Workspaces {}
                 Modules.WindowTitle {}
             }
 
-            // Center: clock
-            Modules.Clock {
-                anchors.centerIn: parent
-            }
-
-            // Right: system modules
+            // Right Section (System Metrics + Network + Time at Far Right)
             Row {
                 anchors.right: parent.right
-                anchors.rightMargin: Theme.spacing * 2
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: Theme.spacing * 2
+                spacing: 1
 
                 Modules.Cpu {}
                 Modules.Ram {}
@@ -48,6 +41,7 @@ ShellRoot {
                 Modules.Network {}
                 Modules.Volume {}
                 Modules.Power {}
+                Modules.Clock {}
             }
         }
     }

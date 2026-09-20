@@ -2,8 +2,10 @@ import QtQuick
 import Quickshell.Io
 import ".." // Theme
 
-Row {
-    spacing: 4
+Rectangle {
+    height: Theme.barHeight
+    width: netRow.implicitWidth + 20
+    color: Theme.bgSoft
 
     property string iface: ""
     property real rxKBps: 0
@@ -15,13 +17,26 @@ Row {
         return kbps >= 1024 ? (kbps / 1024).toFixed(1) + "M" : Math.round(kbps) + "K"
     }
 
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        text: "↓" + fmt(rxKBps) + " ↑" + fmt(txKBps)
-        color: Theme.fg
-        font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize + 1
-        font.bold: true
+    Row {
+        id: netRow
+        anchors.centerIn: parent
+        spacing: 6
+
+        Text {
+            text: "NET"
+            color: Theme.fgMuted
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSize + 1
+            font.bold: true
+        }
+
+        Text {
+            text: "d:" + fmt(rxKBps) + " u:" + fmt(txKBps)
+            color: Theme.fg
+            font.family: Theme.fontFamily
+            font.pixelSize: Theme.fontSize + 2
+            font.bold: true
+        }
     }
 
     Process {

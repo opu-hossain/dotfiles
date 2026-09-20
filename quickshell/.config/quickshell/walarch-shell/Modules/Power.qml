@@ -1,21 +1,31 @@
 import QtQuick
 import ".." // Theme, PowerMenuState
 
-Item {
-    implicitWidth: label.implicitWidth + 8
-    implicitHeight: label.implicitHeight
+Rectangle {
+    id: root
+
+    height: Theme.barHeight
+    width: powerIcon.implicitWidth + 24
+    color: mouse.containsMouse || PowerMenuState.open ? Theme.accent : Theme.bgSoft
+
+    Behavior on color { ColorAnimation { duration: 120 } }
 
     Text {
-        id: label
+        id: powerIcon
         anchors.centerIn: parent
         text: "⏻"
-        color: PowerMenuState.open ? Theme.accent : Theme.fg
+        color: mouse.containsMouse || PowerMenuState.open ? Theme.bgHard : Theme.fg
         font.family: Theme.fontFamily
-        font.pixelSize: Theme.fontSize + 2
+        font.pixelSize: Theme.fontSize + 4
+        font.bold: true
+
+        Behavior on color { ColorAnimation { duration: 120 } }
     }
 
     MouseArea {
+        id: mouse
         anchors.fill: parent
+        hoverEnabled: true
         onClicked: PowerMenuState.open = !PowerMenuState.open
     }
 }
