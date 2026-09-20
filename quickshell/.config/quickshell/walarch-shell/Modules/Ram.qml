@@ -1,6 +1,5 @@
 import QtQuick
-import Quickshell.Io
-import ".." // Theme
+import ".." // Theme, Poller
 
 Rectangle {
     height: Theme.barHeight
@@ -31,19 +30,9 @@ Rectangle {
         }
     }
 
-    Process {
-        id: freeProc
+    Poller {
         command: ["sh", "-c", "free | awk '/^Mem:/{printf \"%.1f\", $3*100/$2}'"]
-        stdout: SplitParser {
-            onRead: data => usage = parseFloat(data.trim())
-        }
-    }
-
-    Timer {
         interval: 3000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: freeProc.running = true
+        onResult: text => usage = parseFloat(text)
     }
 }

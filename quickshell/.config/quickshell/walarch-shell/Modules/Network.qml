@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell.Io
-import ".." // Theme
+import ".." // Theme, Poller
 
 Rectangle {
     height: Theme.barHeight
@@ -39,6 +39,9 @@ Rectangle {
         }
     }
 
+    // One-shot bootstrap: find the default-route interface. This isn't a
+    // periodic sample like the stats below, so it stays a plain Process
+    // rather than going through Poller.
     Process {
         id: ifaceProc
         command: ["sh", "-c", "ip route | awk '/^default/ {print $5; exit}'"]
@@ -48,34 +51,26 @@ Rectangle {
         }
     }
 
-    Process {
-        id: statsProc
+    Poller {
+        interval: 2000
+        // Empty command until iface is known — Poller's own guard skips
+        // running while this is [].
         command: iface === "" ? [] : [
             "sh", "-c",
             "cat /sys/class/net/" + iface + "/statistics/rx_bytes " +
             "/sys/class/net/" + iface + "/statistics/tx_bytes"
         ]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const lines = this.text.trim().split("\n")
-                if (lines.length < 2) return
-                const rx = parseInt(lines[0])
-                const tx = parseInt(lines[1])
-                if (prevRx >= 0) {
-                    rxKBps = (rx - prevRx) / 1024 / 2
-                    txKBps = (tx - prevTx) / 1024 / 2
-                }
-                prevRx = rx
-                prevTx = tx
+        onResult: text => {
+            const lines = text.split("\n")
+            if (lines.length < 2) return
+            const rx = parseInt(lines[0])
+            const tx = parseInt(lines[1])
+            if (prevRx >= 0) {
+                rxKBps = (rx - prevRx) / 1024 / 2
+                txKBps = (tx - prevTx) / 1024 / 2
             }
+            prevRx = rx
+            prevTx = tx
         }
-    }
-
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: if (iface !== "") statsProc.running = true
     }
 }

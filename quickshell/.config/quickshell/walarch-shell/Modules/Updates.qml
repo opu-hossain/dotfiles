@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import ".." // Theme
+import ".." // Theme, Poller
 
 Rectangle {
     id: root
@@ -19,7 +19,7 @@ Rectangle {
     IpcHandler {
         target: "updates"
         function refresh(): void {
-            checkProc.running = true
+            poller.refresh()
         }
     }
 
@@ -49,22 +49,13 @@ Rectangle {
         id: mouse
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: checkProc.running = true
+        onClicked: poller.refresh()
     }
 
-    Process {
-        id: checkProc
+    Poller {
+        id: poller
         command: ["sh", "-c", "(checkupdates 2>/dev/null; yay -Qua 2>/dev/null) | wc -l || true"]
-        stdout: SplitParser {
-            onRead: data => count = parseInt(data.trim()) || 0
-        }
-    }
-
-    Timer {
         interval: 1800000 // 30 mins
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: checkProc.running = true
+        onResult: text => count = parseInt(text) || 0
     }
 }
