@@ -8,9 +8,9 @@ Item {
 
     // Cached scan + persisted launch counts, both live outside the LazyLoader
     // so they're ready the instant the launcher opens.
-    property var  apps: []
-    property bool scanning: false
-    property var  usage: ({})
+    property var   apps: []
+    property bool  scanning: false
+    property var   usage: ({})
 
     readonly property string stateDir:  "$HOME/.local/state/walarch-shell"
     readonly property string usageFile: "$HOME/.local/state/walarch-shell/launcher-usage.json"
@@ -77,7 +77,9 @@ Item {
         id: appScan
         command: ["sh", "-c",
             "for f in /usr/share/applications/*.desktop " +
-            "\"$HOME/.local/share/applications\"/*.desktop; do " +
+            "\"$HOME/.local/share/applications\"/*.desktop " +
+            "/var/lib/flatpak/exports/share/applications/*.desktop " +
+            "\"$HOME/.local/share/flatpak/exports/share/applications\"/*.desktop; do " +
             "[ -f \"$f\" ] || continue; " +
             "grep -q '^NoDisplay=true' \"$f\" && continue; " +
             "name=$(grep -m1 '^Name=' \"$f\" | cut -d= -f2-); " +
@@ -133,8 +135,8 @@ Item {
             color: "transparent"
             focusable: true
 
-            property int  selectedIndex: 0
-            property bool insertMode: true
+            property int   selectedIndex: 0
+            property bool  insertMode: true
             property string vimPending: ""
 
             readonly property int rowHeight: 44
@@ -257,7 +259,7 @@ Item {
                                 height: Math.round(search.font.pixelSize * 1.15)
                                 color: Theme.accent
                                 radius: win.insertMode ? 0 : 2
-                                opacity: win.insertMode ? 1.0 : 0.45   // translucent NORMAL block, like nvim
+                                opacity: win.insertMode ? 1.0 : 0.45
 
                                 Behavior on width   { NumberAnimation { duration: 90; easing.type: Easing.OutCubic } }
                                 Behavior on radius  { NumberAnimation { duration: 90 } }
@@ -284,12 +286,9 @@ Item {
                                     if (win.vimPending !== "") {
                                         win.vimPending = ""
                                     } else if (win.insertMode) {
-                                        // → NORMAL, keep the query. Vim moves the cursor back one char
-                                        // on INSERT→NORMAL so the block sits on the last typed character.
                                         win.insertMode = false
                                         search.cursorPosition = Math.max(0, search.text.length - 1)
                                     } else {
-                                        // NORMAL + no pending → close the launcher
                                         LauncherState.open = false
                                     }
                                     e.accepted = true
@@ -329,7 +328,6 @@ Item {
 
                                 // ===== NORMAL mode =====
 
-                                // Resolve pending `d`
                                 if (win.vimPending === "d") {
                                     win.vimPending = ""
                                     if (e.key === Qt.Key_D) {
@@ -338,14 +336,11 @@ Item {
                                         e.accepted = true
                                         return
                                     }
-                                    // Unrecognized follow-up → fall through to normal handling
                                 }
 
-                                // Navigation
                                 if (e.key === Qt.Key_J) { win.moveBy(1);  e.accepted = true; return }
                                 if (e.key === Qt.Key_K) { win.moveBy(-1); e.accepted = true; return }
 
-                                // Horizontal cursor motions
                                 if (e.key === Qt.Key_H) {
                                     search.cursorPosition = Math.max(0, search.cursorPosition - 1)
                                     e.accepted = true
@@ -367,23 +362,19 @@ Item {
                                     return
                                 }
 
-                                // Delete
                                 if (e.key === Qt.Key_D && shift) {
-                                    // D — clear the whole query
                                     search.text = ""
                                     win.moveTo(0)
                                     e.accepted = true
                                     return
                                 }
                                 if (e.key === Qt.Key_D) {
-                                    // d — wait for the second key (dd)
                                     win.vimPending = "d"
                                     vimTimer.restart()
                                     e.accepted = true
                                     return
                                 }
 
-                                // Mode switches
                                 if (e.key === Qt.Key_I) {
                                     win.insertMode = true
                                     search.cursorPosition = 0
@@ -397,14 +388,12 @@ Item {
                                     return
                                 }
 
-                                // Quit
                                 if (e.key === Qt.Key_Q) {
                                     LauncherState.open = false
                                     e.accepted = true
                                     return
                                 }
 
-                                // Any printable → drop into INSERT and let it through
                                 if (e.text.length > 0 && !alt && !meta) {
                                     win.insertMode = true
                                     return

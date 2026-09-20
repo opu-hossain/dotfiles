@@ -20,7 +20,7 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-STOW_PACKAGES=(hypr kitty nvim tmux quickshell zsh packman-hooks wallpapers)
+STOW_PACKAGES=(hypr kitty nvim tmux quickshell environmentd zsh packman-hooks wallpapers)
 
 log()  { printf '\033[1;34m==>\033[0m %s\n' "$1"; }
 warn() { printf '\033[1;33m==> WARNING:\033[0m %s\n' "$1"; }
@@ -40,8 +40,8 @@ sudo pacman -S --needed --noconfirm base-devel git
 # ---------------------------------------------------------------------------
 # A fresh Arch install's default gpg config has no keyserver configured at
 # all in some cases, or one that's flaky. AUR builds that carry validpgpkeys
-# (wlogout does) need gpg to actually be able to fetch those keys, so this
-# has to be sorted before any makepkg build runs — including yay's own.
+# need gpg to actually be able to fetch those keys, so this has to be sorted
+# before any makepkg build runs — including yay's own.
 log "Configuring a reliable GPG keyserver for AUR package signature checks..."
 mkdir -p "$HOME/.gnupg"
 if ! grep -q "^keyserver" "$HOME/.gnupg/gpg.conf" 2>/dev/null; then
@@ -60,8 +60,11 @@ import_pgp_key() {
     return 1
 }
 
-# wlogout's PGP key specifically — hit this exact failure during testing.
-import_pgp_key F4FDB18A9937358364B276E9E25D679AF73C6D2F
+# NOTE: wlogout used to need its PGP key imported here explicitly, but it's
+# been retired — Quickshell's own power menu (walarch-shell's PowerOverlay.qml)
+# now handles lock/logout/suspend/reboot/shutdown, so wlogout is no longer
+# installed at all. The helper above is kept around in case a future AUR
+# package needs a manual key import.
 
 # ---------------------------------------------------------------------------
 if ! command -v yay &>/dev/null; then
@@ -106,7 +109,7 @@ PACKAGES=(
     eza fastfetch fzf yazi wl-clipboard ripgrep fd zoxide unzip zip
     brightnessctl playerctl pacman-contrib
 
-    # Build tooling nvim's LSP/DAP/telescope setup depends on directly
+    # Build tooling nvim's LSP/DAP/telescope/conform setup depends on directly
     clang cmake ctags lazygit
 
     # Networking (NetworkManager only — no dnsmasq/iptables, those were
@@ -123,15 +126,23 @@ PACKAGES=(
     # the Intel/Nvidia equivalents on different hardware)
     vulkan-radeon opencl-mesa
 
-    # Dev tool version managers that have proper packages
-    # (SDKMAN doesn't — that's handled separately below)
-    nvm miniconda3
+    # Dev tool version managers/toolchains that have proper packages.
+    # nvm is deliberately NOT here — it's installed straight from upstream
+    # further down so it lands at $NVM_DIR (see environmentd/dev.conf)
+    # instead of the pacman package's systemwide path, which .zshrc never
+    # looks at. SDKMAN doesn't have a package at all either — also handled
+    # separately below.
+    rustup uv miniconda3
 
     # Your actual browser
     firefox pavucontrol
 )
 
 yay -S --needed --noconfirm "${PACKAGES[@]}"
+
+# ---------------------------------------------------------------------------
+HYPR_VER="$(pacman -Q hyprland 2>/dev/null | awk '{print $2}')"
+log "Hyprland version installed: ${HYPR_VER:-unknown} (hypr/hyprland.lua needs Hyprland >= 0.55 for native Lua config support)"
 
 # ---------------------------------------------------------------------------
 log "Enabling system services..."
@@ -177,7 +188,7 @@ log "Making scripts executable..."
 chmod +x "$HOME/.config/hypr/scripts/"*.sh 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-log "Adding pacman HookDir entry (instant waybar update-badge refresh)..."
+log "Adding pacman HookDir entry (instant Quickshell update-pill refresh)..."
 if ! grep -q "^HookDir" /etc/pacman.conf; then
     sudo sed -i "/^\[options\]/a HookDir = $HOME/.config/packman-hooks/" /etc/pacman.conf
     log "  added — worth a quick look at /etc/pacman.conf to confirm it landed right"
@@ -193,6 +204,69 @@ if [ -f "$DOTFILES_DIR/sddm/sddm.conf.d/theme.conf" ]; then
     log "  linked — /etc/sddm.conf.d/theme.conf now points at the repo"
 else
     warn "  sddm/sddm.conf.d/theme.conf not found in repo, skipping"
+fi
+
+# ---------------------------------------------------------------------------
+# environmentd (stowed above) puts RUSTUP_HOME/CARGO_HOME/NVM_DIR/
+# npm_config_cache/GRADLE_USER_HOME/PUB_CACHE/UV_*/ANDROID_* at
+# ~/.config/environment.d/dev.conf. Load it now so the rest of this script
+# (and the directories/tools it sets up below) agree with .zshrc about
+# where those tools actually live — almost all of it is on a /data drive,
+# not under $HOME.
+log "Loading dev tool env vars from environmentd/dev.conf..."
+if [ -f "$HOME/.config/environment.d/dev.conf" ]; then
+    set -a
+    . "$HOME/.config/environment.d/dev.conf"
+    set +a
+else
+    warn "  dev.conf not found post-stow — falling back to its default paths for the rest of this script"
+fi
+
+# ---------------------------------------------------------------------------
+log "Creating dev tool cache/home directories referenced by dev.conf..."
+if [ -d /data ]; then
+    if mkdir -p \
+        "${RUSTUP_HOME:-/data/home/dev/rustup}" \
+        "${CARGO_HOME:-/data/home/dev/cargo}" \
+        "${NVM_DIR:-/data/home/dev/nvm}" \
+        "${npm_config_cache:-/data/home/dev/npm}" \
+        "${GRADLE_USER_HOME:-/data/home/dev/gradle}" \
+        "${PUB_CACHE:-/data/home/dev/pub-cache}" \
+        "${UV_CACHE_DIR:-/data/home/dev/uv/cache}" \
+        "${UV_TOOL_DIR:-/data/home/dev/uv/share/tools}" \
+        "${UV_PYTHON_INSTALL_DIR:-/data/home/dev/uv/share/python}" \
+        "${ANDROID_SDK_ROOT:-/data/home/android/sdk}" \
+        "${ANDROID_AVD_HOME:-/data/home/android/dot-android/avd}" \
+        2>/dev/null
+    then
+        log "  dev tool directories ready under /data/home/"
+    else
+        warn "  couldn't create one or more dev tool directories — check permissions on /data"
+    fi
+else
+    warn "/data isn't mounted on this machine. dev.conf points Rust/Node/Gradle/Dart/uv/Android caches under /data/home/ — mount that drive first (or edit environmentd/.config/environment.d/dev.conf to point elsewhere), otherwise those tools won't have anywhere to write."
+fi
+
+# ---------------------------------------------------------------------------
+log "Installing nvm into \$NVM_DIR (not via pacman — see the note above PACKAGES)..."
+NVM_DIR="${NVM_DIR:-/data/home/dev/nvm}"
+if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+    mkdir -p "$NVM_DIR"
+    NVM_LATEST_TAG="$(curl -fsSL https://api.github.com/repos/nvm-sh/nvm/releases/latest 2>/dev/null \
+        | grep -m1 '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')"
+    curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_LATEST_TAG:-v0.40.1}/install.sh" \
+        | NVM_DIR="$NVM_DIR" bash
+else
+    log "  nvm already installed at $NVM_DIR, skipping."
+fi
+
+# ---------------------------------------------------------------------------
+log "Setting the default Rust toolchain (rustup)..."
+if command -v rustup &>/dev/null; then
+    rustup default stable 2>/dev/null || \
+        warn "  'rustup default stable' failed — run it yourself once RUSTUP_HOME/CARGO_HOME are set in a new shell"
+else
+    warn "  rustup not on PATH yet — run 'rustup default stable' yourself in a new shell"
 fi
 
 # ---------------------------------------------------------------------------
@@ -225,5 +299,17 @@ echo "    file and I'll track it too."
 echo "  - qt5ct/qt6ct: installed, but no config file existed to restore —"
 echo "    open qt5ct once and pick a style."
 echo "  - Confirm your wallpaper images landed at ~/Pictures/Wallpapers/"
+echo "  - Dev tool caches (rustup/cargo/nvm/npm/gradle/pub-cache/uv/android)"
+echo "    live under /data/home/ per environmentd/dev.conf — make sure that"
+echo "    drive is mounted on this machine, or edit dev.conf if your layout"
+echo "    differs."
+echo "  - The Android SDK itself isn't installed automatically (accepting"
+echo "    licenses needs a manual 'sdkmanager' run) — ANDROID_HOME points at"
+echo "    /data/home/android/sdk; install the SDK there yourself."
+echo "  - hypr/hyprland.lua replaces the old hyprlang .conf files (kept"
+echo "    alongside as *.conf.bak for reference) and needs Hyprland >= 0.55."
+echo "    One windowrule (firefox-transparency) didn't auto-convert during"
+echo "    that migration — see the TODO comment in modules/windowrules.lua"
+echo "    and re-add it by hand as an hl.window_rule({...})."
 echo "  - Reboot (or log out/in) so the shell, SDDM, GTK theme, and service"
 echo "    changes all take effect"
