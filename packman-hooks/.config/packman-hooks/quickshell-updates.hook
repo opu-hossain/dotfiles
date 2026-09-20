@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Refreshing Quickshell update indicator...
+When = PostTransaction
+Exec = /usr/bin/quickshell -c /home/walarch/.config/quickshell/walarch-shell ipc call updates refresh

@@ -12,14 +12,24 @@ Row {
         const _ = Hyprland.workspaces?.values.length + focusedId
         const wsList = Hyprland.workspaces?.values ?? []
         const activeIds = wsList.map(w => w.id).filter(id => id > 0)
-        const maxId = Math.max(4, 0, ...activeIds)
+
+        // Build set of workspace IDs to display:
+        // Always include 1..5, plus any active/focused workspace > 5
+        const idsToDisplay = new Set([1, 2, 3, 4, 5])
+        for (const id of activeIds) {
+            if (id > 5) idsToDisplay.add(id)
+        }
+        if (focusedId > 5) idsToDisplay.add(focusedId)
+
+        // Sort the workspace IDs numerically
+        const sortedIds = Array.from(idsToDisplay).sort((a, b) => a - b)
 
         const out = []
-        for (let i = 1; i <= maxId; i++) {
+        for (const id of sortedIds) {
             out.push({
-                id: i,
-                focused: focusedId === i,
-                exists: activeIds.indexOf(i) !== -1
+                id: id,
+                focused: focusedId === id,
+                exists: activeIds.indexOf(id) !== -1
             })
         }
         return out
@@ -60,7 +70,7 @@ Row {
 
             height: Theme.barHeight
             width: wsText.implicitWidth + 16
-            color: modelData.focused ? Theme.bgSoft : "transparent"  // Transparent for inactive tabs
+            color: modelData.focused ? Theme.bgSoft : "transparent"
 
             Text {
                 id: wsText

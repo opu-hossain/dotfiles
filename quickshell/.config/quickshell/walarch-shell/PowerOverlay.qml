@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import "." // Theme, PowerMenuState
 
@@ -28,49 +29,59 @@ Item {
             property int    selectedIndex: 0
             property string pendingAction: ""
             property string pendingLabel: ""
-            property var    activeProcess: null
+
+            // Check if any windows exist across any workspace
+            readonly property bool hasOpenWindows: (Hyprland.toplevels?.values ?? []).length > 0
 
             readonly property var actions: [
-                { key: "lock",     label: "Lock",     desc: "Lock the screen",         danger: false, hotkey: "l" },
-                { key: "logout",   label: "Logout",   desc: "End the session",         danger: false, hotkey: "o" },
-                { key: "suspend",  label: "Suspend",  desc: "Sleep, keep the session", danger: false, hotkey: "s" },
-                { key: "reboot",   label: "Reboot",   desc: "Restart the system",      danger: true,  hotkey: "r" },
-                { key: "shutdown", label: "Shutdown", desc: "Power off the system",    danger: true,  hotkey: "p" }
+                { key: "lock",     label: "Lock",     desc: "Lock the screen",         hotkey: "l" },
+                { key: "logout",   label: "Logout",   desc: "End the session",         hotkey: "o" },
+                { key: "suspend",  label: "Suspend",  desc: "Sleep, keep the session", hotkey: "s" },
+                { key: "reboot",   label: "Reboot",   desc: "Restart the system",      danger: true, hotkey: "r" },
+                { key: "shutdown", label: "Shutdown", desc: "Power off the system",    danger: true, hotkey: "p" }
             ]
 
-            function procFor(key) {
+            function executeCmd(key) {
                 switch (key) {
-                case "lock":     return lockProc
-                case "logout":   return logoutProc
-                case "suspend":  return suspendProc
-                case "reboot":   return rebootProc
-                case "shutdown": return shutdownProc
+                case "lock":
+                    Quickshell.execDetached(["sh", "-c", "hyprlock"])
+                    break
+                case "logout":
+                    // Gracefully terminate the systemd user session
+                    Quickshell.execDetached(["sh", "-c", "loginctl terminate-session $XDG_SESSION_ID || loginctl kill-user $USER"])
+                    break
+                case "suspend":
+                    Quickshell.execDetached(["sh", "-c", "hyprlock & sleep 0.3 && systemctl suspend"])
+                    break
+                case "reboot":
+                    Quickshell.execDetached(["sh", "-c", "systemctl reboot"])
+                    break
+                case "shutdown":
+                    Quickshell.execDetached(["sh", "-c", "systemctl poweroff"])
+                    break
                 }
-                return null
             }
 
             function runAction(action) {
-                const proc = procFor(action.key)
-                if (!proc) return
-                if (action.danger) {
+                if (action.danger && win.hasOpenWindows) {
                     win.pendingAction = action.key
                     win.pendingLabel  = action.label
-                    win.activeProcess = proc
                 } else {
-                    proc.running = true
+                    executeCmd(action.key)
                     PowerMenuState.open = false
                 }
             }
 
             function confirmAction() {
-                if (win.activeProcess) win.activeProcess.running = true
+                if (win.pendingAction !== "") {
+                    executeCmd(win.pendingAction)
+                }
                 PowerMenuState.open = false
             }
 
             function cancelAction() {
                 win.pendingAction = ""
                 win.pendingLabel  = ""
-                win.activeProcess = null
             }
 
             function moveBy(delta) {
@@ -93,7 +104,6 @@ Item {
                 Keys.onPressed: e => {
                     const ctrl = (e.modifiers & Qt.ControlModifier) !== 0
 
-                    // Esc: cancel pending, else close
                     if (e.key === Qt.Key_Escape || (ctrl && e.key === Qt.Key_BracketLeft)) {
                         if (win.pendingAction !== "") win.cancelAction()
                         else PowerMenuState.open = false
@@ -101,7 +111,6 @@ Item {
                         return
                     }
 
-                    // Confirmation modal: only Enter and Esc handled
                     if (win.pendingAction !== "") {
                         if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) {
                             win.confirmAction()
@@ -110,7 +119,6 @@ Item {
                         return
                     }
 
-                    // Navigation
                     if (e.key === Qt.Key_Down || e.key === Qt.Key_J) {
                         win.moveBy(1); e.accepted = true; return
                     }
@@ -120,14 +128,12 @@ Item {
                     if (e.key === Qt.Key_Home) { win.selectedIndex = 0; e.accepted = true; return }
                     if (e.key === Qt.Key_End)  { win.selectedIndex = win.actions.length - 1; e.accepted = true; return }
 
-                    // Activate
                     if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) {
                         win.runAction(win.actions[win.selectedIndex])
                         e.accepted = true
                         return
                     }
 
-                    // Single-key hotkeys
                     if (e.text.length === 1 && !ctrl) {
                         const k = e.text.toLowerCase()
                         for (let i = 0; i < win.actions.length; i++) {
@@ -147,7 +153,6 @@ Item {
                     }
                 }
 
-                // ---------- Backdrop ----------
                 Rectangle {
                     anchors.fill: parent
                     color: "#0d0e0e"
@@ -162,7 +167,6 @@ Item {
                     }
                 }
 
-                // ---------- Main card ----------
                 Rectangle {
                     id: card
                     anchors.centerIn: parent
@@ -192,7 +196,6 @@ Item {
                         anchors.top: parent.top
                         spacing: 0
 
-                        // -------- Header --------
                         Item {
                             width: parent.width
                             height: 82
@@ -226,7 +229,6 @@ Item {
                             opacity: 0.2
                         }
 
-                        // -------- Action rows --------
                         Repeater {
                             model: win.actions
 
@@ -245,7 +247,6 @@ Item {
 
                                 Behavior on color { ColorAnimation { duration: 100 } }
 
-                                // Left accent bar when selected
                                 Rectangle {
                                     width: 3
                                     height: parent.height
@@ -255,7 +256,6 @@ Item {
                                     Behavior on color { ColorAnimation { duration: 100 } }
                                 }
 
-                                // Label
                                 Text {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 26
@@ -272,7 +272,6 @@ Item {
                                     Behavior on color { ColorAnimation { duration: 100 } }
                                 }
 
-                                // Description
                                 Text {
                                     anchors.left: parent.left
                                     anchors.leftMargin: 26 + 120
@@ -283,7 +282,6 @@ Item {
                                     font.pixelSize: Theme.fontSize
                                 }
 
-                                // Hotkey badge
                                 Rectangle {
                                     anchors.right: parent.right
                                     anchors.rightMargin: 22
@@ -312,7 +310,7 @@ Item {
                                 MouseArea {
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    enabled: win.pendingAction === ""      // <-- add this
+                                    enabled: win.pendingAction === ""
                                     onEntered: win.selectedIndex = index
                                     onClicked: win.runAction(modelData)
                                 }
@@ -326,7 +324,6 @@ Item {
                             opacity: 0.15
                         }
 
-                        // -------- Footer --------
                         Item {
                             width: parent.width
                             height: 44
@@ -360,7 +357,6 @@ Item {
                     }
                 }
 
-                // ---------- Confirmation modal ----------
                 Rectangle {
                     id: confirmBox
                     anchors.centerIn: parent
@@ -398,7 +394,7 @@ Item {
 
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "This will terminate your session."
+                            text: "You have active programs running."
                             color: Theme.fgMuted
                             font.family: Theme.fontFamily
                             font.pixelSize: Theme.fontSize
@@ -468,17 +464,6 @@ Item {
                     }
                 }
             }
-
-            // ---------- Process workers ----------
-            Process { id: lockProc;     command: ["hyprlock"] }
-            Process { id: logoutProc;   command: ["hyprctl", "dispatch", "exit"] }
-            Process {
-                id: suspendProc
-                // Lock first so wake lands on the lock screen, then suspend.
-                command: ["sh", "-c", "hyprlock & sleep 0.3; systemctl suspend"]
-            }
-            Process { id: rebootProc;   command: ["systemctl", "reboot"] }
-            Process { id: shutdownProc; command: ["systemctl", "poweroff"] }
         }
     }
 }
