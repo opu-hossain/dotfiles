@@ -155,7 +155,7 @@ function y() {
 }
 
 export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
-export PATH="/home/walarch/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
@@ -182,7 +182,7 @@ export NVM_DIR="/data/home/dev/nvm"
 
 
 # Added by Antigravity CLI installer
-export PATH="/home/walarch/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # >>> grok installer >>>
 export PATH="$HOME/.grok/bin:$PATH"

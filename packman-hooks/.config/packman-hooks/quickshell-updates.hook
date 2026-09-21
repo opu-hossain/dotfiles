@@ -7,5 +7,10 @@ Target = *
 
 [Action]
 Description = Refreshing Quickshell update indicator...
-When = PostTransaction
+# NOTE: this path is intentionally hardcoded rather than using $HOME or ~.
+# Pacman hooks run as part of the pacman/yay transaction itself (root's
+# process, not your login session), so $HOME here would resolve to /root,
+# not this user's home — that would silently break the refresh rather than
+# make it portable. If you ever fork this repo for a different user, update
+# this one line by hand.
 Exec = /usr/bin/quickshell -c /home/walarch/.config/quickshell/walarch-shell ipc call updates refresh
