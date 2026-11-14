@@ -9,9 +9,18 @@ Item {
         bodySupported: true
         imageSupported: true
         actionsSupported: true
-        // Untracked notifications are discarded immediately — tracking is
-        // what keeps one alive long enough for us to render it as a toast
-        onNotification: notification => notification.tracked = true
+
+        readonly property int maxVisible: 4
+
+        onNotification: notification => {
+            notification.tracked = true
+
+            // Cap the stack: dismiss the oldest ones beyond maxVisible
+            const list = server.trackedNotifications.values
+            const extra = list.length - server.maxVisible
+            for (let i = 0; i < extra; i++)
+                list[i].dismiss()
+        }
     }
 
     PanelWindow {
@@ -25,6 +34,7 @@ Item {
         margins.top: 14
         margins.right: 14
         color: "transparent"
+        visible: server.trackedNotifications.values.length > 0
         exclusiveZone: 0 // don't reserve bar-like space, just float above
         implicitWidth: 380
         implicitHeight: column.implicitHeight
@@ -47,14 +57,17 @@ Item {
                         urgency === NotificationUrgency.Low ? Theme.fgMuted :
                         Theme.accent
 
-                    // Apps can request their own timeout (seconds); a negative
-                    // value means "no preference", so fall back to an
-                    // urgency-based default. Critical notifications never
-                    // auto-expire — they wait for an explicit dismiss.
-                    readonly property real autoExpireSeconds:
-                        toast.modelData.expireTimeout >= 0 ? toast.modelData.expireTimeout :
-                        urgency === NotificationUrgency.Critical ? -1 :
-                        urgency === NotificationUrgency.Low ? 3 : 5
+                    // <= 0 means "app has no preference" (0 and -1 are both used in the wild),
+                    // so fall back to urgency defaults. Nothing sticks forever: even critical
+                    // toasts time out (click still dismisses early). Long app timeouts are capped.
+                    readonly property real autoExpireSeconds: {
+                        const t = toast.modelData.expireTimeout
+                        if (urgency === NotificationUrgency.Critical) return 10
+                        if (t > 0) return Math.min(t, 5)
+                        return urgency === NotificationUrgency.Low ? 3 : 5
+                    }
+
+                    property bool hovered: hoverTracker.hovered
 
                     width: column.width
                     height: content.implicitHeight + 28
@@ -169,10 +182,13 @@ Item {
                         onClicked: toast.modelData.dismiss()
                     }
 
+                    HoverHandler { id: hoverTracker }
+
                     Timer {
-                        running: toast.autoExpireSeconds >= 0
-                        interval: toast.autoExpireSeconds * 1000
-                        onTriggered: toast.modelData.expire()
+                        running: toast.autoExpireSeconds > 0 && !toast.hovered
+                        interval: Math.max(1, toast.autoExpireSeconds * 1000)
+                        repeat: false
+                        onTriggered: toast.modelData.dismiss()
                     }
                 }
             }

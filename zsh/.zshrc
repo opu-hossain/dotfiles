@@ -48,14 +48,17 @@ fi
 # ══════════════════════════════════════════════════════
 #  TAB COMPLETION  (with directory selection)
 # ══════════════════════════════════════════════════════
-autoload -Uz compinit
+fpath=(~/.grok/completions/zsh $fpath)
 
-# only regenerate the completion dump once a day — checking it on every
-# shell start is the single biggest avoidable startup cost in zsh
-for dump in ~/.zcompdump(N.mh+24); do
+autoload -Uz compinit
+# full rebuild only if the dump is missing or older than 24h; otherwise skip the check
+_zcomp_stale=(~/.zcompdump(N.mh+24))
+if [[ ! -f ~/.zcompdump ]] || (( $#_zcomp_stale )); then
     compinit
-done
-compinit -C
+else
+    compinit -C
+fi
+unset _zcomp_stale
 
 zstyle ':completion:*' menu select                        # arrow-key menu
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"  # colored entries
@@ -187,6 +190,5 @@ export PATH="$HOME/.local/bin:$PATH"
 # >>> grok installer >>>
 export PATH="$HOME/.grok/bin:$PATH"
 fpath=(~/.grok/completions/zsh $fpath)
-autoload -Uz compinit && compinit -C
 # <<< grok installer <<<
 export EDITOR=nvim

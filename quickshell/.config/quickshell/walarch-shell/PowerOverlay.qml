@@ -44,14 +44,14 @@ Item {
             function executeCmd(key) {
                 switch (key) {
                 case "lock":
-                    Quickshell.execDetached(["sh", "-c", "hyprlock"])
+                    Quickshell.execDetached(["loginctl", "lock-session"])
                     break
                 case "logout":
                     // Gracefully terminate the systemd user session
                     Quickshell.execDetached(["sh", "-c", "loginctl terminate-session $XDG_SESSION_ID || loginctl kill-user $USER"])
                     break
                 case "suspend":
-                    Quickshell.execDetached(["sh", "-c", "hyprlock & sleep 0.3 && systemctl suspend"])
+                    Quickshell.execDetached(["sh", "-c", "loginctl lock-session && sleep 0.5 && systemctl suspend"])
                     break
                 case "reboot":
                     Quickshell.execDetached(["sh", "-c", "systemctl reboot"])
