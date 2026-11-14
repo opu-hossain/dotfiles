@@ -58,6 +58,7 @@ return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
+		dependencies = { "nvim-treesitter/nvim-treesitter-textobjects" },
 		config = function()
 			require("nvim-treesitter").setup({
 				ensure_installed = {
@@ -80,6 +81,18 @@ return {
 				highlight = { enable = true },
 				indent = { enable = true },
 			})
+
+			require("nvim-treesitter-textobjects").setup({
+				move = { set_jumps = true },
+			})
+
+			vim.keymap.set({ "n", "x", "o" }, "]f", function()
+				require("nvim-treesitter-textobjects.move").goto_next_start("@function.outer", "textobjects")
+			end, { desc = "Next function" })
+
+			vim.keymap.set({ "n", "x", "o" }, "[f", function()
+				require("nvim-treesitter-textobjects.move").goto_previous_start("@function.outer", "textobjects")
+			end, { desc = "Previous function" })
 		end,
 	},
 
@@ -147,9 +160,13 @@ return {
 			vim.api.nvim_create_autocmd("LspAttach", {
 				callback = function(ev)
 					local opts = { buffer = ev.buf }
+
 					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+					vim.keymap.set("n", "gD", "<cmd>Telescope lsp_definitions<CR>", opts)
+					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
 					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+
 					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
 					vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 					vim.keymap.set("n", "<leader>dd", vim.diagnostic.open_float, opts)

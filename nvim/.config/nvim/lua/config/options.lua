@@ -41,3 +41,6 @@ vim.keymap.set("n", "<C-Up>", "<cmd>resize +2<CR>")
 vim.keymap.set("n", "<C-Down>", "<cmd>resize -2<CR>")
 vim.keymap.set("n", "<C-Right>", "<cmd>vertical resize -2<CR>")
 vim.keymap.set("n", "<C-Left>", "<cmd>vertical resize +2<CR>")
+
+vim.keymap.set("n", "<A-Left>", "<C-o>", { desc = "Jump back" })
+vim.keymap.set("n", "<A-Right>", "<C-i>", { desc = "Jump forward" })
